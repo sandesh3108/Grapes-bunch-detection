@@ -1,0 +1,47 @@
+{
+  "ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "random_seed": 42,
+  "overall_counts": {
+    "train": {
+      "images": 7424,
+      "annotations": 6340,
+      "boxes": 7880
+    },
+    "val": {
+      "images": 1591,
+      "annotations": 1372,
+      "boxes": 1713
+    },
+    "test": {
+      "images": 1591,
+      "annotations": 1364,
+      "boxes": 1723
+    }
+  },
+  "per_subfolder_breakdown": {
+    "Dataset 1": {
+      "train": 2975,
+      "val": 638,
+      "test": 637
+    },
+    "Dataset 2": {
+      "train": 2054,
+      "val": 440,
+      "test": 441
+    },
+    "Dataset 3": {
+      "train": 1447,
+      "val": 310,
+      "test": 310
+    },
+    "Dataset 4": {
+      "train": 948,
+      "val": 203,
+      "test": 203
+    }
+  }
+}

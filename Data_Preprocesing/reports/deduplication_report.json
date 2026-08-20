@@ -1,0 +1,16 @@
+{
+  "total_images_evaluated": 12963,
+  "exact_duplicates": 94,
+  "near_duplicates": 2224,
+  "total_duplicates_removed": 2318,
+  "images_retained": 10647,
+  "duplicate_groups_count": 1131,
+  "similarity_threshold_used": 8,
+  "perceptual_hash_method": "phash",
+  "duplicates_per_subfolder": {
+    "Dataset 1": 70,
+    "Dataset 3": 476,
+    "Dataset 4": 1755,
+    "Dataset 2": 17
+  }
+}

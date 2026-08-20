@@ -1,0 +1,43 @@
+{
+  "total_images": 12965,
+  "valid_images": 12963,
+  "corrupted_images": 2,
+  "unannotated_images": 12963,
+  "orphan_annotations": 0,
+  "detected_annotation_format_per_subfolder": {
+    "Dataset 1": "none",
+    "Dataset 2": "none",
+    "Dataset 3": "none",
+    "Dataset 4": "none"
+  },
+  "subfolder_breakdown": {
+    "Dataset 1": {
+      "total_images": 4312,
+      "valid": 4312,
+      "corrupted": 0,
+      "unannotated": 4312,
+      "format": "none"
+    },
+    "Dataset 2": {
+      "total_images": 2960,
+      "valid": 2960,
+      "corrupted": 0,
+      "unannotated": 2960,
+      "format": "none"
+    },
+    "Dataset 3": {
+      "total_images": 2544,
+      "valid": 2543,
+      "corrupted": 1,
+      "unannotated": 2543,
+      "format": "none"
+    },
+    "Dataset 4": {
+      "total_images": 3149,
+      "valid": 3148,
+      "corrupted": 1,
+      "unannotated": 3148,
+      "format": "none"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+# Data Preprocessing Configuration — GrapesNet Pipeline
+
+input_path: "Dataset/GrapesNet"
+output_path: "data/processed/"
+rejected_path: "data/rejected/"
+reports_path: "reports/"
+experiments_path: "experiments/dataset_v001/"
+
+classes:
+  0: grape_bunch
+
+split:
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+  seed: 42
+
+resize:
+  target_size: 640
+  padding_color: [114, 114, 114]
+
+quality:
+  blur:
+    enabled: true
+    method: laplacian_variance
+    threshold: 100.0
+  min_box_area_ratio: 0.0001
+  max_box_area_ratio: 0.99
+
+deduplication:
+  method: phash
+  threshold: 8
+
+normalization:
+  enabled: false   # Handled internally by Ultralytics YOLO at train time
+
+augmentation:
+  horizontal_flip:
+    enabled: true
+    probability: 0.5
+  rotation:
+    enabled: true
+    degrees: 15
+    probability: 0.5
+  hsv:
+    enabled: true
+    hue_shift_limit: 10
+    sat_shift_limit: 20
+    val_shift_limit: 20
+    probability: 0.5
+  brightness_contrast:
+    enabled: true
+    brightness_limit: 0.2
+    contrast_limit: 0.2
+    probability: 0.5
+  occlusion_simulation:
+    enabled: true
+    num_holes: 4
+    max_h_size: 32
+    max_w_size: 32
+    probability: 0.3
+  motion_blur:
+    enabled: true
+    blur_limit: 7
+    probability: 0.3

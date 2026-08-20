@@ -1,0 +1,48 @@
+{
+  "overall": {
+    "total_images": 12965,
+    "valid_retained_images": 10606,
+    "quarantined_images": 2359
+  },
+  "by_subfolder": {
+    "Dataset 1": {
+      "total": 4312,
+      "valid": 4250,
+      "quarantined": 62,
+      "boxes": 4661
+    },
+    "Dataset 2": {
+      "total": 2960,
+      "valid": 2935,
+      "quarantined": 25,
+      "boxes": 2809
+    },
+    "Dataset 3": {
+      "total": 2544,
+      "valid": 2067,
+      "quarantined": 477,
+      "boxes": 2044
+    },
+    "Dataset 4": {
+      "total": 3149,
+      "valid": 1354,
+      "quarantined": 1795,
+      "boxes": 1802
+    }
+  },
+  "by_split": {
+    "train": {},
+    "val": {},
+    "test": {}
+  },
+  "bounding_box_metrics": {
+    "total_boxes": 11316,
+    "mean_area": 0.322408807000329,
+    "std_area": 0.24777291663033765,
+    "min_area": 0.005952,
+    "max_area": 0.99,
+    "mean_width": 0.5107585119083348,
+    "mean_height": 0.5280164810887239,
+    "mean_objects_per_image": 1.0669432396756553
+  }
+}
