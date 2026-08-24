@@ -6,6 +6,7 @@ and reports to reports/ and experiments/dataset_v001/.
 
 import shutil
 import json
+import random
 import cv2
 import numpy as np
 from pathlib import Path
@@ -23,11 +24,14 @@ from src.preprocessing.augmentation import augment_training_sample
 from src.preprocessing.statistics import generate_dataset_statistics
 from src.preprocessing.visualization import generate_visualization_samples
 from src.preprocessing.contracts import AnnotationRecord, ImageRecord, BoundingBox
+from src.preprocessing.output_validation import validate_processed_dataset
+from src.preprocessing.configuration import validate_and_normalize_config
 
 
 class PreprocessingPipeline:
     def __init__(self, config: Dict[str, Any]):
-        self.config = config
+        self.config = validate_and_normalize_config(config)
+        config = self.config
         self.output_path = Path(config.get("output_path", "data/processed/"))
         self.rejected_path = Path(config.get("rejected_path", "data/rejected/"))
         self.reports_path = Path(config.get("reports_path", "reports/"))
@@ -35,6 +39,8 @@ class PreprocessingPipeline:
         self.classes = {int(k): v for k, v in config.get("classes", {0: "grape_bunch"}).items()}
         self.target_size = int(config.get("resize", {}).get("target_size", 640))
         self.padding_color = tuple(config.get("resize", {}).get("padding_color", [114, 114, 114]))
+        self.annotation_mode = config.get("annotation", {}).get("mode", "require")
+        self.overwrite_output = bool(config.get("output", {}).get("overwrite", False))
 
     def run(self, validate_only: bool = False, stage: Optional[str] = None):
         """Executes the complete pipeline or specified stage."""
@@ -47,6 +53,11 @@ class PreprocessingPipeline:
         with open(self.experiments_path / "preprocessing_config_snapshot.json", "w", encoding="utf-8") as f:
             json.dump(self.config, f, indent=2)
 
+        seed = int(self.config.get("reproducibility", {}).get("seed", self.config.get("split", {}).get("seed", 42)))
+        random.seed(seed)
+        np.random.seed(seed)
+        cv2.setRNGSeed(seed)
+
         # Stage 1: Ingestion & Format Auto-detection
         ingestor = DatasetIngestor(self.config)
         image_records, annotation_records, ingestion_report = ingestor.run()
@@ -55,10 +66,28 @@ class PreprocessingPipeline:
         annotation_records, annotation_report = validate_annotations(
             annotation_records, self.reports_path, self.classes
         )
+        image_by_path = {record.path: record for record in image_records}
+        for annotation in annotation_records:
+            if not annotation.valid:
+                image = image_by_path.get(annotation.image_path)
+                if image:
+                    image.status = "invalid_annotation"
+                    image.rejection_reason = annotation.error_message or "Invalid annotation"
 
         if validate_only or stage == "ingestion" or stage == "validation":
             print("--> Stopped after Validation phase (validate-only mode).")
             return
+
+        annotated_images = [record for record in image_records if record.status == "valid"]
+        if not annotated_images:
+            message = (
+                "No valid human-authored annotations were found. No YOLO training dataset was created. "
+                "Annotate the RGB images and rerun the pipeline."
+            )
+            if self.annotation_mode == "manual-later":
+                print(f"--> {message} Manual-later mode stops after validation by design.")
+                return
+            raise RuntimeError(message)
 
         # Stage 2: Annotation Standardization (implicit in ingestion conversion to normalized BoundingBox contracts)
 
@@ -96,8 +125,12 @@ class PreprocessingPipeline:
         ann_map = {a.image_path: a for a in clean_annotations}
         split_map = {s.image_path: s.split for s in split_assignments}
 
-        # Clear existing output directory
+        # Never discard a previous dataset unless the configuration explicitly permits it.
         if self.output_path.exists():
+            if not self.overwrite_output:
+                raise FileExistsError(
+                    f"Output path already exists: {self.output_path}. Set output.overwrite=true only after reviewing it."
+                )
             shutil.rmtree(self.output_path)
 
         for split_name in ["train", "val", "test"]:
@@ -112,7 +145,7 @@ class PreprocessingPipeline:
             # Read original image
             img_bgr = cv2.imread(img_rec.path)
             if img_bgr is None:
-                continue
+                raise RuntimeError(f"OpenCV could not read validated image: {img_rec.path}")
 
             orig_h, orig_w = img_bgr.shape[:2]
 
@@ -138,7 +171,8 @@ class PreprocessingPipeline:
 
             # Save processed image & label file
             dest_img_path = self.output_path / split_name / "images" / f"{img_rec.subfolder}_{img_rec.filename}"
-            cv2.imwrite(str(dest_img_path), letterboxed_img)
+            if not cv2.imwrite(str(dest_img_path), letterboxed_img):
+                raise RuntimeError(f"Failed to write processed image: {dest_img_path}")
 
             dest_label_path = (
                 self.output_path / split_name / "labels" / f"{img_rec.subfolder}_{Path(img_rec.filename).stem}.txt"
@@ -156,11 +190,16 @@ class PreprocessingPipeline:
         # Generate Statistics and Visualizations
         print("--> Generating dataset statistics and visualization samples...")
         generate_dataset_statistics(
-            image_records, clean_annotations, split_assignments, self.experiments_path
+            clean_images, clean_annotations, split_assignments, self.experiments_path
         )
         generate_visualization_samples(
             clean_images, clean_annotations, self.experiments_path, self.classes
         )
+        integrity_report = validate_processed_dataset(self.output_path, self.classes)
+        with open(self.reports_path / "final_integrity_report.json", "w", encoding="utf-8") as f:
+            json.dump(integrity_report, f, indent=2)
+        if not integrity_report["valid"]:
+            raise RuntimeError("Final output validation failed; see final_integrity_report.json")
 
         print("\n========================================================")
         print(f"  Pipeline Execution Successfully Completed!")

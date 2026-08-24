@@ -1,0 +1,71 @@
+2. Preprocess only the manually labeled images
+Open PowerShell and run:
+cd "C:\Users\sande\OneDrive\Desktop\Projects\Graph Bunch Detection\Data_Preprocesing"
+python scripts/preprocess.py --config configs/preprocessing.yaml
+The pipeline will ignore the unlabeled images and create a YOLO dataset from the labeled images.
+Check that this folder exists after it completes:
+C:\Users\sande\OneDrive\Desktop\Projects\Graph Bunch Detection\Data_Preprocesing\data\processed\v001
+It should contain:
+train\images
+train\labels
+val\images
+val\labels
+test\images
+test\labels
+Also open this report and ensure "valid": true:
+Data_Preprocesing\reports\final_integrity_report.json
+3. Create the YOLO dataset configuration
+Create this file:
+Data_Preprocesing\data\processed\v001\data.yaml
+Put this inside it:
+path: C:/Users/sande/OneDrive/Desktop/Projects/Graph Bunch Detection/Data_Preprocesing/data/processed/v001
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: grape_bunch
+4. Install YOLO
+In the same activated venv, run:
+python -m pip install ultralytics
+5. Train your first model
+Still inside Data_Preprocesing, run:
+yolo detect train data="data/processed/v001/data.yaml" model=yolo11n.pt epochs=100 imgsz=640 batch=8
+- If you get an out-of-memory error, lower batch=8 to batch=4 or batch=2.
+- Training creates the best model here:
+Data_Preprocesing\runs\detect\train\weights\best.pt
+6. Check the first model before auto-labeling
+Test it on a few unlabelled images:
+yolo detect predict model="runs/detect/train/weights/best.pt" source="C:\Users\sande\OneDrive\Desktop\Projects\Graph Bunch Detection\Dataset\GrapesNet\Dataset 1\Dataset 1(b)" conf=0.50 save=True
+Open the resulting images in:
+Data_Preprocesing\runs\detect\predict
+If boxes mostly cover the grape bunches correctly, proceed.
+7. Auto-label the remaining images
+Use a Python auto-label script that:
+- loads best.pt;
+- finds every .jpg / .png image recursively;
+- skips images that already have your manual .xml;
+- predicts grape bunch boxes;
+- writes a new .xml file beside every remaining image;
+- uses a confidence threshold around 0.50.
+It must save Pascal VOC XML, not YOLO .txt, because your original labels are XML. Do not mix XML and TXT inside Dataset 1, Dataset 2, etc.
+8. Review the generated labels
+Open the dataset again in LabelImg:
+- Review auto-labeled images.
+- Correct missed grape bunches.
+- Delete wrong boxes.
+- Save the corrected XML files.
+Prioritize images with:
+- low-confidence predictions;
+- dense/overlapping bunches;
+- strong shadows;
+- unusual views or backgrounds.
+9. Build the final dataset and retrain
+After review, rerun:
+cd "C:\Users\sande\OneDrive\Desktop\Projects\Graph Bunch Detection\Data_Preprocesing"
+python scripts/preprocess.py --config configs/preprocessing.yaml
+If v001 already exists, change this in configs/preprocessing.yaml:
+output_path: "data/processed/v002/"
+experiments_path: "experiments/dataset_v002/"
+Then train the final model using v002/data.yaml.
+The next concrete step is Step 2: run preprocessing on your 200–250 manually labeled images. Once it completes, I can give you the ready-to-run Python script for Step 7 that creates XML labels for every remaining image.

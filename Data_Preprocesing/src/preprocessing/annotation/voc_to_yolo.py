@@ -65,7 +65,15 @@ def parse_voc_xml(
     boxes: List[BoundingBox] = []
     for obj in root.findall("object"):
         name = obj.findtext("name", "").strip()
-        cls_id = class_map.get(name, 0)  # Default to class 0 if single class
+        if name not in class_map:
+            return AnnotationRecord(
+                image_path=image_path,
+                annotation_path=xml_path,
+                source_format="voc_xml",
+                valid=False,
+                error_message=f"Unknown VOC class '{name}'",
+            )
+        cls_id = class_map[name]
 
         bndbox = obj.find("bndbox")
         if bndbox is None:
@@ -89,15 +97,8 @@ def parse_voc_xml(
         norm_width = width / image_width
         norm_height = height / image_height
 
-        box = sanitize_bounding_box(
-            BoundingBox(
-                class_id=cls_id,
-                x_center=x_center,
-                y_center=y_center,
-                width=norm_width,
-                height=norm_height,
-            )
-        )
+        box = BoundingBox(class_id=cls_id, x_center=x_center, y_center=y_center,
+                          width=norm_width, height=norm_height)
 
         is_valid, err_msg = validate_bounding_box(box, allowed_classes)
         if is_valid:

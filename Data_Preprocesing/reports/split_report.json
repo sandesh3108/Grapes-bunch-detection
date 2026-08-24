@@ -7,41 +7,41 @@
   "random_seed": 42,
   "overall_counts": {
     "train": {
-      "images": 7424,
-      "annotations": 6340,
-      "boxes": 7880
+      "images": 166,
+      "annotations": 166,
+      "boxes": 472
     },
     "val": {
-      "images": 1591,
-      "annotations": 1372,
-      "boxes": 1713
+      "images": 35,
+      "annotations": 35,
+      "boxes": 109
     },
     "test": {
-      "images": 1591,
-      "annotations": 1364,
-      "boxes": 1723
+      "images": 35,
+      "annotations": 35,
+      "boxes": 109
     }
   },
   "per_subfolder_breakdown": {
     "Dataset 1": {
-      "train": 2975,
-      "val": 638,
-      "test": 637
+      "train": 71,
+      "val": 15,
+      "test": 14
     },
     "Dataset 2": {
-      "train": 2054,
-      "val": 440,
-      "test": 441
+      "train": 43,
+      "val": 9,
+      "test": 9
     },
     "Dataset 3": {
-      "train": 1447,
-      "val": 310,
-      "test": 310
+      "train": 42,
+      "val": 9,
+      "test": 9
     },
     "Dataset 4": {
-      "train": 948,
-      "val": 203,
-      "test": 203
+      "train": 10,
+      "val": 2,
+      "test": 3
     }
   }
 }

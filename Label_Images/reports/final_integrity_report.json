@@ -1,0 +1,25 @@
+{
+    "valid": true,
+    "pipeline": "Label_Images GrapesNet Pipeline",
+    "dataset_version": "v001",
+    "total_raw_images": 234,
+    "labeled_images_processed": 234,
+    "unlabeled_images_skipped": 0,
+    "total_bounding_boxes": 688,
+    "splits": {
+        "train": {
+            "image_count": 163,
+            "box_count": 491
+        },
+        "val": {
+            "image_count": 35,
+            "box_count": 105
+        },
+        "test": {
+            "image_count": 36,
+            "box_count": 92
+        }
+    },
+    "output_directory": "C:/Users/sande/OneDrive/Desktop/Projects/Graph Bunch Detection/Label_Images/data/processed/v001",
+    "data_yaml": "C:/Users/sande/OneDrive/Desktop/Projects/Graph Bunch Detection/Label_Images/data/processed/v001/data.yaml"
+}

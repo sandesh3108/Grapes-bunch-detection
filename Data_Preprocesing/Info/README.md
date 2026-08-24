@@ -6,6 +6,8 @@ This repository contains the **dataset preprocessing pipeline** for a PhD resear
 
 This is **preprocessing only**. Model training, the custom detection architecture being developed for the PhD, and live-video/tracking deployment are separate, later stages of the project and are out of scope for this repository.
 
+> **Training safety:** GrapesNet images in this workspace currently have no verified bounding-box annotations. The pipeline intentionally refuses to create a YOLO training dataset from guessed boxes. Annotate/review the RGB images first, then run preprocessing.
+
 ## Project Context
 
 - **Task:** Single-class object detection — detecting grape bunches (`grape_bunch`) in vineyard images.
@@ -75,8 +77,9 @@ Note: only the four `.md` files exist yet. Everything else under `src/`, `script
 - [x] Dataset identified and characterized (GrapesNet)
 - [x] Literature review completed, research gap identified
 - [x] Preprocessing pipeline fully specified (this repo)
-- [x] Preprocessing pipeline implemented (Complete 8-stage modular implementation in `Data_Preprocesing/`)
-- [x] Auto-annotation fallback and dataset verification completed
+- [x] Preprocessing pipeline implemented with strict annotation validation
+- [x] RGB-only ingestion, provenance-aware splitting, and final-output validation added
+- [ ] Human-authored grape-bunch bounding boxes acquired and reviewed
 - [ ] Model baseline benchmarking (YOLOv11 / YOLOv12)
 - [ ] Custom detection architecture development
 - [ ] Cross-dataset generalization validation
@@ -84,5 +87,7 @@ Note: only the four `.md` files exist yet. Everything else under `src/`, `script
 
 ## Where to Go Next
 
-- To understand the codebase built: see `TECHNICAL_ARCHITECTURE.md`.
-- To run the single-command pipeline and verify output: see `HOW_TO_RUN.md`.
+- Read `ANNOTATION_AND_PREPROCESSING_GUIDE.md` before creating a training dataset.
+- See `CONFIGURATION_REFERENCE.md` and `SECURITY_AND_OPERATIONS.md` before running a new dataset version.
+- To understand the codebase: see `TECHNICAL_ARCHITECTURE.md`.
+- To run validation or preprocessing: see `HOW_TO_RUN.md`.

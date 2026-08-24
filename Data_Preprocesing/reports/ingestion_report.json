@@ -1,43 +1,45 @@
 {
-  "total_images": 12965,
-  "valid_images": 12963,
-  "corrupted_images": 2,
-  "unannotated_images": 12963,
+  "total_images": 9317,
+  "valid_images": 238,
+  "corrupted_images": 0,
+  "unannotated_images": 9079,
+  "excluded_non_rgb_images": 0,
+  "excluded_generated_variants": 2100,
   "orphan_annotations": 0,
   "detected_annotation_format_per_subfolder": {
-    "Dataset 1": "none",
-    "Dataset 2": "none",
-    "Dataset 3": "none",
-    "Dataset 4": "none"
+    "Dataset 1": "voc_xml",
+    "Dataset 2": "voc_xml",
+    "Dataset 3": "voc_xml",
+    "Dataset 4": "voc_xml"
   },
   "subfolder_breakdown": {
     "Dataset 1": {
-      "total_images": 4312,
-      "valid": 4312,
+      "total_images": 4311,
+      "valid": 100,
       "corrupted": 0,
-      "unannotated": 4312,
-      "format": "none"
+      "unannotated": 4211,
+      "format": "voc_xml"
     },
     "Dataset 2": {
       "total_images": 2960,
-      "valid": 2960,
+      "valid": 61,
       "corrupted": 0,
-      "unannotated": 2960,
-      "format": "none"
+      "unannotated": 2899,
+      "format": "voc_xml"
     },
     "Dataset 3": {
-      "total_images": 2544,
-      "valid": 2543,
-      "corrupted": 1,
-      "unannotated": 2543,
-      "format": "none"
+      "total_images": 1696,
+      "valid": 60,
+      "corrupted": 0,
+      "unannotated": 1636,
+      "format": "voc_xml"
     },
     "Dataset 4": {
-      "total_images": 3149,
-      "valid": 3148,
-      "corrupted": 1,
-      "unannotated": 3148,
-      "format": "none"
+      "total_images": 350,
+      "valid": 17,
+      "corrupted": 0,
+      "unannotated": 333,
+      "format": "voc_xml"
     }
   }
 }

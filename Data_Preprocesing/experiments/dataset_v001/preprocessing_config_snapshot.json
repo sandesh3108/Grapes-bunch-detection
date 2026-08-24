@@ -1,9 +1,21 @@
 {
   "input_path": "Dataset/GrapesNet",
-  "output_path": "data/processed/",
-  "rejected_path": "data/rejected/",
-  "reports_path": "reports/",
-  "experiments_path": "experiments/dataset_v001/",
+  "output_path": "C:\\Users\\sande\\OneDrive\\Desktop\\Projects\\Graph Bunch Detection\\Data_Preprocesing\\data\\processed\\v001",
+  "rejected_path": "C:\\Users\\sande\\OneDrive\\Desktop\\Projects\\Graph Bunch Detection\\Data_Preprocesing\\data\\rejected",
+  "reports_path": "C:\\Users\\sande\\OneDrive\\Desktop\\Projects\\Graph Bunch Detection\\Data_Preprocesing\\reports",
+  "experiments_path": "C:\\Users\\sande\\OneDrive\\Desktop\\Projects\\Graph Bunch Detection\\Data_Preprocesing\\experiments\\dataset_v001",
+  "annotation": {
+    "mode": "require"
+  },
+  "input": {
+    "modalities": [
+      "rgb"
+    ],
+    "exclude_generated_variants": true
+  },
+  "output": {
+    "overwrite": false
+  },
   "classes": {
     "0": "grape_bunch"
   },
@@ -11,6 +23,9 @@
     "train": 0.7,
     "validation": 0.15,
     "test": 0.15,
+    "seed": 42
+  },
+  "reproducibility": {
     "seed": 42
   },
   "resize": {

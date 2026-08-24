@@ -57,7 +57,7 @@ class QualityFilter:
         subfolder_quarantined: Dict[str, int] = {}
 
         for rec in tqdm(image_records, desc="Quality Check", leave=False):
-            if rec.corrupted or rec.status not in ("valid", "unannotated"):
+            if rec.corrupted or rec.status != "valid":
                 continue
 
             # 1. Blur Check
@@ -94,7 +94,7 @@ class QualityFilter:
                 retained_annotations.append(ann_rec)
 
         report = {
-            "total_images_checked": len([r for r in image_records if r.status in ("valid", "unannotated", "low_quality")]),
+            "total_images_checked": len([r for r in image_records if r.status in ("valid", "low_quality")]),
             "blurred_images_quarantined": blurred_count,
             "invalid_area_boxes_removed": invalid_box_count,
             "images_passed": len(retained_images),

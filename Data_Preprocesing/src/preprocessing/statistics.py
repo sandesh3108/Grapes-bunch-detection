@@ -48,6 +48,15 @@ def generate_dataset_statistics(
 
     stats["by_subfolder"] = subfolder_stats
 
+    for assignment in split_assignments:
+        split = assignment.split
+        entry = stats["by_split"][split]
+        entry["images"] = entry.get("images", 0) + 1
+        annotation = ann_map.get(assignment.image_path)
+        box_count = len(annotation.boxes) if annotation else 0
+        entry["annotated_images"] = entry.get("annotated_images", 0) + int(box_count > 0)
+        entry["boxes"] = entry.get("boxes", 0) + box_count
+
     # Bounding box area metrics
     all_areas = []
     all_widths = []

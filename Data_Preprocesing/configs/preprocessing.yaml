@@ -1,10 +1,27 @@
 # Data Preprocessing Configuration — GrapesNet Pipeline
 
-input_path: "Dataset/GrapesNet"
-output_path: "data/processed/"
+input_path: "../Label_Images/Dataset/images"
+output_path: "data/processed/v002/"
 rejected_path: "data/rejected/"
 reports_path: "reports/"
-experiments_path: "experiments/dataset_v001/"
+experiments_path: "experiments/dataset_v002/"
+
+# Never train on guessed boxes. `manual-later` records an image-only audit
+# and stops before YOLO output; it never creates a training dataset.
+annotation:
+  mode: require  # require | manual-later
+
+# GrapesNet RGB-D depth files are retained in the source tree, but detection
+# baseline preprocessing uses colour images only.
+input:
+  modalities: [rgb]
+  exclude_generated_variants: true
+  # LabelImg/YOLO export layout: images and labels are sibling directories.
+  yolo_labels_dir: "../Label_Images/Dataset/labels"
+
+# Refuse to remove an existing processed dataset unless explicitly requested.
+output:
+  overwrite: false
 
 classes:
   0: grape_bunch
@@ -13,6 +30,9 @@ split:
   train: 0.70
   validation: 0.15
   test: 0.15
+  seed: 42
+
+reproducibility:
   seed: 42
 
 resize:

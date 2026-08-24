@@ -1,48 +1,60 @@
 {
   "overall": {
-    "total_images": 12965,
-    "valid_retained_images": 10606,
-    "quarantined_images": 2359
+    "total_images": 236,
+    "valid_retained_images": 236,
+    "quarantined_images": 0
   },
   "by_subfolder": {
     "Dataset 1": {
-      "total": 4312,
-      "valid": 4250,
-      "quarantined": 62,
-      "boxes": 4661
+      "total": 100,
+      "valid": 100,
+      "quarantined": 0,
+      "boxes": 109
     },
     "Dataset 2": {
-      "total": 2960,
-      "valid": 2935,
-      "quarantined": 25,
-      "boxes": 2809
+      "total": 61,
+      "valid": 61,
+      "quarantined": 0,
+      "boxes": 274
     },
     "Dataset 3": {
-      "total": 2544,
-      "valid": 2067,
-      "quarantined": 477,
-      "boxes": 2044
+      "total": 60,
+      "valid": 60,
+      "quarantined": 0,
+      "boxes": 292
     },
     "Dataset 4": {
-      "total": 3149,
-      "valid": 1354,
-      "quarantined": 1795,
-      "boxes": 1802
+      "total": 15,
+      "valid": 15,
+      "quarantined": 0,
+      "boxes": 15
     }
   },
   "by_split": {
-    "train": {},
-    "val": {},
-    "test": {}
+    "train": {
+      "images": 166,
+      "annotated_images": 166,
+      "boxes": 472
+    },
+    "val": {
+      "images": 35,
+      "annotated_images": 35,
+      "boxes": 109
+    },
+    "test": {
+      "images": 35,
+      "annotated_images": 35,
+      "boxes": 109
+    }
   },
   "bounding_box_metrics": {
-    "total_boxes": 11316,
-    "mean_area": 0.322408807000329,
-    "std_area": 0.24777291663033765,
-    "min_area": 0.005952,
-    "max_area": 0.99,
-    "mean_width": 0.5107585119083348,
-    "mean_height": 0.5280164810887239,
-    "mean_objects_per_image": 1.0669432396756553
+    "total_boxes": 690,
+    "mean_area": 0.10027052753623189,
+    "std_area": 0.13053724922928242,
+    "min_area": 0.003468,
+    "max_area": 0.806304,
+    "mean_width": 0.20065507246376812,
+    "mean_height": 0.3906028985507246,
+    "mean_objects_per_image": 2.9237288135593222
   }
 }

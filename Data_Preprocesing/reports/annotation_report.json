@@ -1,11 +1,11 @@
 {
-  "total_annotation_records": 12963,
-  "valid_records": 12963,
+  "total_annotation_records": 238,
+  "valid_records": 238,
   "invalid_records": 0,
-  "total_bounding_boxes": 17747,
+  "total_bounding_boxes": 692,
   "invalid_bounding_boxes": 0,
   "class_distribution": {
-    "grape_bunch": 17747
+    "grape_bunch": 692
   },
   "issues_sample": []
 }

@@ -2,7 +2,7 @@
 
 This document describes the technical structure of the preprocessing pipeline **now implemented** in `Data Preprocesing/`, following `PREPROCESSING_PIPELINE.md`. It exists so any developer or researcher can understand what each module does and how data flows through the system.
 
-> **Status:** Implementation Complete. All 8 modular stages, data contracts, format converters, and CLI entry point are implemented and operational.
+> **Status:** The pipeline is operational but deliberately blocks YOLO dataset generation until reviewed human-authored annotations are available. See `ANNOTATION_AND_PREPROCESSING_GUIDE.md`.
 
 ---
 
@@ -54,7 +54,7 @@ Every stage is a standalone module with a defined input/output contract. `pipeli
 - **`coco_to_yolo.py`** — converts a COCO `.json` → per-image YOLO `.txt` files.
 - **`yolo_passthrough_validator.py`** — if already YOLO format, validates rather than converts.
 - **`custom_to_yolo.py`** — placeholder for non-standard formats with actionable error handling.
-- **`auto_annotator.py`** — Computer Vision fallback module (HSV/LAB color space segmentation + CLAHE contrast + contour saliency analysis) that auto-generates normalized YOLO bounding boxes for grape clusters when raw annotation files are absent.
+- **Annotation safety policy** — missing annotations are reported as `unannotated`; the pipeline does not generate contour-, colour-, or centre-box labels for training.
 - **`validator.py`** — shared validation logic used by all converters (bounding box range checks, class ID checks).
 - **Likely libraries:** `xml.etree.ElementTree` (VOC), `json` (COCO), `pyyaml` (class map config)
 
@@ -99,7 +99,7 @@ Every stage is a standalone module with a defined input/output contract. `pipeli
 - **Likely libraries:** `opencv-python` or `matplotlib`
 
 ### `src/preprocessing/pipeline.py`
-- **Responsibility:** Orchestrates all the above modules in the fixed stage order defined in `PREPROCESSING_PIPELINE.md` Section 1. Handles stage-level checkpointing so `--stage <name>` can be run independently for debugging.
+- **Responsibility:** Orchestrates all stages in the fixed order, seeds random-number generators, protects existing outputs by default, and runs final image/label integrity validation.
 
 ### `scripts/preprocess.py`
 - **Responsibility:** CLI entrypoint. Parses `--input`, `--output`, `--config`, `--seed`, `--validate-only`, `--stage`, and calls into `pipeline.py`.

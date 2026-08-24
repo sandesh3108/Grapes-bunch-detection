@@ -54,7 +54,7 @@ class Deduplicator:
         Returns (retained_records, duplicate_groups, report_dict).
         """
         print("--> [Stage 3] Running deduplication...")
-        valid_records = [r for r in image_records if not r.corrupted and r.status in ("valid", "unannotated")]
+        valid_records = [r for r in image_records if not r.corrupted and r.status == "valid"]
 
         md5_map: Dict[str, List[ImageRecord]] = {}
         phash_map: Dict[str, Tuple[ImageRecord, imagehash.ImageHash]] = {}

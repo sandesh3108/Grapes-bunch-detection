@@ -14,6 +14,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from src.preprocessing.pipeline import PreprocessingPipeline
+from src.preprocessing.configuration import validate_and_normalize_config
 
 
 def parse_args():
@@ -89,6 +90,13 @@ def main():
         config["output_path"] = args.output
     if args.seed is not None:
         config["split"]["seed"] = args.seed
+
+    try:
+        config = validate_and_normalize_config(config)
+    except ValueError as error:
+        parser_error = f"Configuration error: {error}"
+        print(parser_error, file=sys.stderr)
+        sys.exit(2)
 
     pipeline = PreprocessingPipeline(config)
     pipeline.run(validate_only=args.validate_only, stage=args.stage)

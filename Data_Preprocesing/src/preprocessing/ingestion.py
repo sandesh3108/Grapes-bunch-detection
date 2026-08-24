@@ -17,7 +17,28 @@ from src.preprocessing.annotation.voc_to_yolo import parse_voc_xml
 from src.preprocessing.annotation.coco_to_yolo import parse_coco_json
 from src.preprocessing.annotation.yolo_passthrough_validator import parse_yolo_txt
 from src.preprocessing.annotation.custom_to_yolo import handle_custom_format
-from src.preprocessing.annotation.auto_annotator import detect_grape_bunches_auto
+
+
+GENERATED_VARIANT_PREFIXES = ("horflip_", "vertflip_", "topwarp_", "bottomwarp_", "leftwarp_", "rightomwarp_")
+
+
+def classify_modality(image_path: Path) -> str:
+    """Classify GrapesNet-style RGB-D files without modifying the source data."""
+    parts = {part.lower() for part in image_path.parts}
+    name = image_path.name.lower()
+    if "rgb-d" in parts:
+        return "rgb" if "_color" in name else "depth"
+    return "rgb"
+
+
+def provenance_group_for(image_path: Path) -> str:
+    """Keep published flip/warp derivatives with their unmodified source image."""
+    stem = image_path.stem
+    lower = stem.lower()
+    for prefix in GENERATED_VARIANT_PREFIXES:
+        if lower.startswith(prefix):
+            return stem[len(prefix):]
+    return stem
 
 
 def validate_image_file(image_path: str) -> Tuple[bool, int, int, int, str, Optional[str]]:
@@ -56,6 +77,14 @@ class DatasetIngestor:
         self.reports_path = Path(config.get("reports_path", "reports/"))
         self.classes = {int(k): v for k, v in config.get("classes", {0: "grape_bunch"}).items()}
         self.class_name_map = {v: k for k, v in self.classes.items()}
+        input_config = config.get("input", {})
+        self.modalities = set(input_config.get("modalities", ["rgb"]))
+        self.exclude_generated_variants = bool(input_config.get("exclude_generated_variants", True))
+        labels_dir = input_config.get("yolo_labels_dir")
+        self.yolo_labels_dir = Path(labels_dir) if labels_dir else None
+        self.annotation_mode = config.get("annotation", {}).get("mode", "require")
+        if self.annotation_mode not in {"require", "manual-later"}:
+            raise ValueError("annotation.mode must be 'require' or 'manual-later'")
 
     def run(self) -> Tuple[List[ImageRecord], List[AnnotationRecord], Dict[str, Any]]:
         """
@@ -76,6 +105,11 @@ class DatasetIngestor:
         if not self.input_path.exists():
             raise FileNotFoundError(f"Input path does not exist: {self.input_path}")
 
+        if self.yolo_labels_dir and not self.yolo_labels_dir.is_absolute():
+            self.yolo_labels_dir = (Path.cwd() / self.yolo_labels_dir).resolve()
+        if self.yolo_labels_dir and not self.yolo_labels_dir.is_dir():
+            raise FileNotFoundError(f"YOLO labels directory does not exist: {self.yolo_labels_dir}")
+
         # Discover top-level subfolders or process as a single dataset if no subfolders exist
         subfolders = [d for d in self.input_path.iterdir() if d.is_dir()]
         if not subfolders:
@@ -89,6 +123,8 @@ class DatasetIngestor:
             "valid_images": 0,
             "corrupted_images": 0,
             "unannotated_images": 0,
+            "excluded_non_rgb_images": 0,
+            "excluded_generated_variants": 0,
             "orphan_annotations": 0,
             "detected_annotation_format_per_subfolder": {},
             "subfolder_breakdown": {},
@@ -96,11 +132,21 @@ class DatasetIngestor:
 
         for subfolder in subfolders:
             subfolder_name = subfolder.name
-            fmt = detect_annotation_format(str(subfolder))
+            fmt = "yolo_txt" if self.yolo_labels_dir else detect_annotation_format(str(subfolder))
             report_summary["detected_annotation_format_per_subfolder"][subfolder_name] = fmt
             print(f"    Subfolder '{subfolder_name}': Detected format = '{fmt}'")
 
-            images = find_all_images(str(subfolder))
+            discovered_images = find_all_images(str(subfolder))
+            images = []
+            for candidate in discovered_images:
+                modality = classify_modality(candidate)
+                if modality not in self.modalities:
+                    report_summary["excluded_non_rgb_images"] += 1
+                    continue
+                if self.exclude_generated_variants and candidate.stem.lower().startswith(GENERATED_VARIANT_PREFIXES):
+                    report_summary["excluded_generated_variants"] += 1
+                    continue
+                images.append(candidate)
             subfolder_report = {
                 "total_images": len(images),
                 "valid": 0,
@@ -125,6 +171,7 @@ class DatasetIngestor:
                 rel_path = str(img_path)
                 filename = img_path.name
                 stem = img_path.stem
+                modality = classify_modality(img_path)
 
                 is_valid_img, w, h, channels, img_fmt, err_msg = validate_image_file(str(img_path))
                 if not is_valid_img:
@@ -153,7 +200,7 @@ class DatasetIngestor:
                             ann_path, rel_path, w, h, self.class_name_map, self.classes
                         )
                 elif fmt == "yolo_txt":
-                    possible_txt = img_path.with_suffix(".txt")
+                    possible_txt = (self.yolo_labels_dir / f"{img_path.stem}.txt") if self.yolo_labels_dir else img_path.with_suffix(".txt")
                     if possible_txt.exists():
                         ann_path = str(possible_txt)
                         ann_rec = parse_yolo_txt(ann_path, rel_path, self.classes)
@@ -168,19 +215,18 @@ class DatasetIngestor:
                 status = "valid"
                 rejection_reason = None
                 if fmt == "none" or ann_rec is None:
-                    # Auto-detect grape bunch bounding boxes using CV color saliency / contour analysis
-                    auto_boxes = detect_grape_bunches_auto(rel_path)
                     subfolder_report["unannotated"] += 1
-                    subfolder_report["valid"] += 1
-                    ann_rec = AnnotationRecord(
-                        image_path=rel_path,
-                        annotation_path=None,
-                        source_format="auto_detected_cv",
-                        boxes=auto_boxes,
-                        valid=True,
-                    )
+                    status = "unannotated"
+                    rejection_reason = "No supported human-authored annotation found"
                 else:
-                    subfolder_report["valid"] += 1
+                    if not ann_rec.valid:
+                        status = "invalid_annotation"
+                        rejection_reason = ann_rec.error_message or "Invalid annotation"
+                    elif not ann_rec.boxes:
+                        status = "invalid_annotation"
+                        rejection_reason = "Annotation contains no valid bounding boxes"
+                    else:
+                        subfolder_report["valid"] += 1
 
                 img_record = ImageRecord(
                     path=rel_path,
@@ -193,6 +239,8 @@ class DatasetIngestor:
                     corrupted=False,
                     annotation_path=ann_path,
                     detected_annotation_format=fmt,
+                    modality=modality,
+                    provenance_group=provenance_group_for(img_path),
                     status=status,
                     rejection_reason=rejection_reason,
                 )

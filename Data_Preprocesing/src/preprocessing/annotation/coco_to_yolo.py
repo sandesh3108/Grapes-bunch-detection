@@ -56,22 +56,17 @@ def parse_coco_json(
                         continue
                     cat_id = ann.get("category_id", 0)
                     cat_name = categories.get(cat_id, "grape_bunch")
-                    cls_id = class_map.get(cat_name, 0)
+                    if cat_name not in class_map:
+                        continue
+                    cls_id = class_map[cat_name]
 
                     x_center = (xmin + w / 2.0) / img_w
                     y_center = (ymin + h / 2.0) / img_h
                     norm_w = w / img_w
                     norm_h = h / img_h
 
-                    box = sanitize_bounding_box(
-                        BoundingBox(
-                            class_id=cls_id,
-                            x_center=x_center,
-                            y_center=y_center,
-                            width=norm_w,
-                            height=norm_h,
-                        )
-                    )
+                    box = BoundingBox(class_id=cls_id, x_center=x_center, y_center=y_center,
+                                      width=norm_w, height=norm_h)
                     is_valid, _ = validate_bounding_box(box, allowed_classes)
                     if is_valid:
                         boxes.append(box)

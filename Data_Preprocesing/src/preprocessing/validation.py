@@ -6,7 +6,8 @@ Performs secondary validation pass on annotation records, verifying class IDs an
 import json
 from pathlib import Path
 from typing import List, Dict, Tuple, Any
-from src.preprocessing.contracts import AnnotationRecord, ImageRecord
+from src.preprocessing.contracts import AnnotationRecord
+from src.preprocessing.annotation.validator import validate_bounding_box
 
 
 def validate_annotations(
@@ -37,14 +38,15 @@ def validate_annotations(
         record_valid = True
         for box in record.boxes:
             total_boxes += 1
-            if box.class_id in class_distribution:
+            is_valid, error = validate_bounding_box(box, classes)
+            if is_valid:
                 class_distribution[box.class_id] += 1
             else:
                 invalid_boxes += 1
                 record_valid = False
                 issues.append({
                     "image_path": record.image_path,
-                    "error": f"Invalid class_id {box.class_id} not in allowed classes {list(classes.keys())}"
+                    "error": error,
                 })
 
         if record_valid:

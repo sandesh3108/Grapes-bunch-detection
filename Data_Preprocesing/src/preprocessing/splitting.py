@@ -44,9 +44,11 @@ class GroupAwareSplitter:
         # Organize images by subfolder and group
         subfolder_groups: Dict[str, Dict[str, List[ImageRecord]]] = defaultdict(lambda: defaultdict(list))
         for rec in image_records:
-            if rec.status not in ("valid", "unannotated"):
+            if rec.status != "valid":
                 continue
-            grp_id = dupe_lookup.get(rec.path, f"single_{rec.path}")
+            # Published flip/warp variants and perceptual duplicates must remain
+            # together.  Subfolder remains a stratification boundary below.
+            grp_id = dupe_lookup.get(rec.path, f"source_{rec.subfolder}_{rec.provenance_group or rec.path}")
             subfolder_groups[rec.subfolder][grp_id].append(rec)
 
         assignments: List[SplitAssignment] = []

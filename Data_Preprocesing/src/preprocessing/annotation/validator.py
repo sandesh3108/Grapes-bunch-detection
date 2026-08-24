@@ -50,11 +50,15 @@ def validate_bounding_box(
 
 
 def sanitize_bounding_box(box: BoundingBox) -> BoundingBox:
-    """Clamps bounding box coordinates to strict [0, 1] range."""
-    x_center = max(0.0, min(1.0, box.x_center))
-    y_center = max(0.0, min(1.0, box.y_center))
-    width = max(0.0, min(1.0, box.width))
-    height = max(0.0, min(1.0, box.height))
+    """Clip through corner coordinates, preserving a geometrically valid box."""
+    x1 = max(0.0, min(1.0, box.x_center - box.width / 2.0))
+    y1 = max(0.0, min(1.0, box.y_center - box.height / 2.0))
+    x2 = max(0.0, min(1.0, box.x_center + box.width / 2.0))
+    y2 = max(0.0, min(1.0, box.y_center + box.height / 2.0))
+    x_center = (x1 + x2) / 2.0
+    y_center = (y1 + y2) / 2.0
+    width = x2 - x1
+    height = y2 - y1
     return BoundingBox(
         class_id=box.class_id,
         x_center=round(x_center, 6),

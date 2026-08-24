@@ -50,6 +50,8 @@ class ImageRecord:
     corrupted: bool = False
     annotation_path: Optional[str] = None
     detected_annotation_format: str = "none"
+    modality: str = "rgb"
+    provenance_group: Optional[str] = None
     status: str = "valid"  # valid, unannotated, corrupted, invalid_annotation, duplicate, low_quality
     rejection_reason: Optional[str] = None
 
@@ -65,6 +67,8 @@ class ImageRecord:
             "corrupted": self.corrupted,
             "annotation_path": self.annotation_path,
             "detected_annotation_format": self.detected_annotation_format,
+            "modality": self.modality,
+            "provenance_group": self.provenance_group,
             "status": self.status,
             "rejection_reason": self.rejection_reason,
         }

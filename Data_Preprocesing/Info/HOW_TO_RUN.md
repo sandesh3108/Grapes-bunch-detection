@@ -33,12 +33,18 @@ Do not manually copy/move files into `data/raw/` — the pipeline's ingestion st
 
 ## 3. Running the Full Pipeline (Single Command)
 
+Before this command can create a training dataset, every RGB image selected for training needs a reviewed YOLO/VOC/COCO annotation. The default `annotation.mode: require` is deliberate: it stops rather than inventing boxes. Dataset-3 and Dataset-4 depth files are excluded; RGB colour files are retained.
+
 To run the complete 8-stage preprocessing pipeline and generate the ready-to-train dataset with a single command:
 
 ```bash
 # Navigate to the Data Preprocesing folder and run:
 python scripts/preprocess.py --config configs/preprocessing.yaml
 ```
+
+Each output must use a versioned folder such as `data/processed/v001/`. If that version already exists, the command refuses to overwrite it. Review or archive that dataset, then set `output.overwrite: true` explicitly for a replacement run.
+
+For the full parameter list and operating safeguards, see `CONFIGURATION_REFERENCE.md` and `SECURITY_AND_OPERATIONS.md`.
 
 This single command executes all 8 stages in sequence (Ingestion → Annotation Standardization → Deduplication → Quality Filtering → Leakage-Safe Splitting → 640x640 Letterboxing → Normalization → Train-only Augmentation) and outputs the processed YOLO-ready dataset.
 
@@ -108,9 +114,9 @@ Once these 4 steps are verified, you can pass `data/processed/` directly to Ultr
 
 ## 7. Common Errors and How to Handle Them
 
-### "No annotation files found in Dataset-X"
-**Cause:** That subfolder genuinely has no bounding-box annotations yet (this was flagged as a known unknown in `PREPROCESSING_PIPELINE.md` Section 0).
-**Fix:** This is expected, not a bug. The pipeline should log these images under `data/rejected/unannotated/` rather than crash. If you want to proceed with image-only processing (resize/dedupe/quality-filter) while you annotate separately (e.g. via LabelImg, CVAT, or Roboflow), run with `--annotation-mode manual-later` if implemented, or process that subfolder's images through Stages 1/3/4 only and merge annotations back in later.
+### "No valid human-authored annotations were found"
+**Cause:** The source images have no accepted YOLO, VOC, or COCO bounding boxes.
+**Fix:** This is a safety stop, not a pipeline failure. Create or review annotations in Label Studio, CVAT, LabelImg, or Roboflow, export them in one supported format, and rerun. Do not use colour-contour or centre-box guesses as training labels.
 
 ### "Unrecognized annotation format" / conversion failure
 **Cause:** A subfolder's annotation files don't match VOC XML, COCO JSON, or YOLO txt.

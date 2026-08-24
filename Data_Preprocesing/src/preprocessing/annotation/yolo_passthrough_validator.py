@@ -35,7 +35,12 @@ def parse_yolo_txt(
             if len(parts) != 5:
                 continue
             try:
-                cls_id = int(parts[0])
+            # Some LabelImg exports serialize class 0 as "0.0".  Accept it
+            # only when it is mathematically an integer class id.
+            raw_class_id = float(parts[0])
+            if not raw_class_id.is_integer():
+                raise ValueError("class id must be an integer")
+            cls_id = int(raw_class_id)
                 xc = float(parts[1])
                 yc = float(parts[2])
                 w = float(parts[3])
@@ -43,16 +48,7 @@ def parse_yolo_txt(
             except ValueError:
                 continue
 
-            box = sanitize_bounding_box(
-                BoundingBox(
-                    class_id=cls_id,
-                    x_center=xc,
-                    y_center=yc,
-                    width=w,
-                    height=h,
-                )
-            )
-
+            box = BoundingBox(class_id=cls_id, x_center=xc, y_center=yc, width=w, height=h)
             is_valid, err_msg = validate_bounding_box(box, allowed_classes)
             if is_valid:
                 boxes.append(box)
